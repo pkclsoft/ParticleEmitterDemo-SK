@@ -19,6 +19,7 @@ class GameScene: SKScene {
     override func didMove(to view: SKView) {
         
         self.backgroundColor = .black
+        self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
 
         // Create a list of emitter configs to load
         let configFiles = [
@@ -47,7 +48,7 @@ class GameScene: SKScene {
         do {
             // Cycle through all emitters configs loading them
             try configFiles.forEach { (filename) in
-                let emitter = try SKParticleEmitterNode(withConfigFile: filename)
+                let emitter = try SKParticleEmitterNode(withConfigFile: filename, andTargetNode: self)
                 
                 // Center the particle system
                 emitter.position = .zero
@@ -59,14 +60,31 @@ class GameScene: SKScene {
         self.showNextEmitter()
     }
     
+    var dragging : Bool = false
+    var startPos : CGPoint = .zero
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.showNextEmitter()
+        startPos =  touches.first!.location(in: self)
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let newPosition = touches.first!.location(in: self)
+
+        if newPosition != startPos {
+            dragging = true
+        }
+        
+        if dragging {
+            particleEmitter?.emitter!.sourcePosition = Vector2(newPosition)
+        }
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if !dragging {
+            self.showNextEmitter()
+        }
+        
+        dragging = false
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -93,7 +111,7 @@ class GameScene: SKScene {
         // Get the next particle system from the enumerator and reset it
         particleEmitter = self.particleEnumerator?.next()?.element
         particleEmitter?.emitter!.reset()
-        particleEmitter?.emitter!.sourcePosition = Vector2(Float(self.size.width) / 2.0, Float(self.size.height) / 2.0)
+        particleEmitter?.emitter!.sourcePosition = .zero
         self.addChild(particleEmitter!)
     }
     
