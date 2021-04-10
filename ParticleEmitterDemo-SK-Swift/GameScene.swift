@@ -94,7 +94,7 @@ class GameScene: SKScene {
     static let frameTime = TimeInterval(0.016)
     
     override func update(_ currentTime: TimeInterval) {
-        self.particleEmitter?.update(withDelta: GameScene.frameTime)
+        self.particleEmitter?.update(withDelta: GameScene.frameTime, providingAlpha: 1.0)
     }
     
     func showNextEmitter() {
