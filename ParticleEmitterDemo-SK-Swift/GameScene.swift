@@ -63,6 +63,36 @@ class GameScene: SKScene {
     var dragging : Bool = false
     var startPos : CGPoint = .zero
     
+    #if os(macOS)
+    var mouseDown : Bool = false
+    
+    override func mouseDown(with event: NSEvent) {
+        startPos =  event.location(in: self)
+        mouseDown = true
+    }
+    
+    override func mouseUp(with event: NSEvent) {
+        if !dragging {
+            self.showNextEmitter()
+        }
+        
+        dragging = false
+        mouseDown = false
+    }
+    
+    override func mouseDragged(with event: NSEvent) {
+        let newPosition = event.location(in: self)
+
+        if (newPosition != startPos) && mouseDown {
+            dragging = true
+        }
+        
+        if dragging {
+            particleEmitter?.emitter!.sourcePosition = Vector2(newPosition)
+        }
+
+    }
+    #else
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         startPos =  touches.first!.location(in: self)
     }
@@ -89,6 +119,7 @@ class GameScene: SKScene {
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
     }
+    #endif
     
     /// 1/60th of a second.
     static let frameTime = TimeInterval(0.016)
